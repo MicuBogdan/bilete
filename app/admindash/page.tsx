@@ -220,9 +220,8 @@ export default function AdminDashboard() {
                     className={seatClass}
                     title={`${zoneName}${seat.row_number}-${seat.seat_number}${seat.occupant_name ? `: ${seat.occupant_name}` : ''}`}
                   >
-                    {seat.is_occupied && '👤'}
                     {seat.is_disabled && '✖'}
-                    {!seat.is_occupied && !seat.is_disabled && seat.seat_number}
+                    {!seat.is_disabled && seat.seat_number}
                   </button>
                 )
               })}
@@ -265,9 +264,8 @@ export default function AdminDashboard() {
                   seat.occupant_name ? `: ${seat.occupant_name}` : ''
                 }`}
               >
-                {seat.is_occupied && '👤'}
                 {seat.is_disabled && '✖'}
-                {!seat.is_occupied && !seat.is_disabled && seat.position_order}
+                {!seat.is_disabled && seat.position_order}
               </button>
             )
           })}
