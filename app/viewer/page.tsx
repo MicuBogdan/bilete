@@ -7,12 +7,17 @@ export default function ViewerPage() {
   const [seats, setSeats] = useState<Seat[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [stats, setStats] = useState({
     total: 0,
     available: 0,
     occupied: 0,
     disabled: 0,
   })
+
+  const missingSupabaseEnv =
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   useEffect(() => {
     loadSeats()
@@ -32,7 +37,9 @@ export default function ViewerPage() {
 
     if (error) {
       console.error('Error loading seats:', error)
+      setLoadError(error.message)
     } else {
+      setLoadError(null)
       setSeats(data || [])
       calculateStats(data || [])
     }
@@ -205,6 +212,18 @@ export default function ViewerPage() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">👁️ Disponibilitate Locuri</h1>
         </div>
+
+        {missingSupabaseEnv && (
+          <div className="mb-6 p-4 bg-red-50 border-2 border-red-300 rounded-lg text-red-900">
+            Lipsesc variabilele `NEXT_PUBLIC_SUPABASE_URL` sau `NEXT_PUBLIC_SUPABASE_ANON_KEY` în mediul curent.
+          </div>
+        )}
+
+        {loadError && (
+          <div className="mb-6 p-4 bg-red-50 border-2 border-red-300 rounded-lg text-red-900">
+            Eroare la încărcarea scaunelor: {loadError}
+          </div>
+        )}
 
         {stats.total === 0 && (
           <div className="mb-6 p-4 bg-yellow-50 border-2 border-yellow-300 rounded-lg text-yellow-900">
