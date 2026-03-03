@@ -180,9 +180,14 @@ export default function AdminPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">👨‍💼 Panoul Administrator</h1>
-          <Link href="/" className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800">
-            ← Înapoi
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/hall-config" className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+              ⚙️ Configurare sală
+            </Link>
+            <Link href="/" className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800">
+              ← Înapoi
+            </Link>
+          </div>
         </div>
 
         {/* Info panel */}
