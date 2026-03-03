@@ -16,13 +16,36 @@ const cleanEnv = (value?: string) => {
   return trimmed
 }
 
-const supabaseUrl = cleanEnv(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
-) || FALLBACK_SUPABASE_URL
+const normalizeApiKey = (value?: string) => cleanEnv(value).replace(/\s+/g, '')
 
-const supabaseAnonKey = cleanEnv(
+const isLikelyJwt = (value: string) => {
+  if (!value) return false
+  const parts = value.split('.')
+  return value.startsWith('eyJ') && parts.length === 3 && parts.every(Boolean)
+}
+
+const normalizeUrl = (value?: string) => cleanEnv(value).replace(/\s+/g, '')
+
+const isLikelySupabaseUrl = (value: string) => {
+  if (!value) return false
+  return value.startsWith('https://') && value.includes('.supabase.co')
+}
+
+const envSupabaseUrl = normalizeUrl(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
+)
+
+const supabaseUrl = isLikelySupabaseUrl(envSupabaseUrl)
+  ? envSupabaseUrl
+  : FALLBACK_SUPABASE_URL
+
+const envSupabaseAnonKey = normalizeApiKey(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
-) || FALLBACK_SUPABASE_ANON_KEY
+)
+
+const supabaseAnonKey = isLikelyJwt(envSupabaseAnonKey)
+  ? envSupabaseAnonKey
+  : FALLBACK_SUPABASE_ANON_KEY
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
