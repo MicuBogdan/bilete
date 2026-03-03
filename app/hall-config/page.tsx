@@ -56,17 +56,51 @@ export default function HallConfigPage() {
     if (error) {
       console.error('Error updating config:', error)
       alert('Eroare la actualizare!')
-    } else {
-      // Delete old seats for this zone
-      await supabase
-        .from('seats')
-        .delete()
-        .eq('zone', zoneName)
+      return
+    }
 
-      // Create new seats
-      const newSeats = Array.from({ length: totalSeats }, (_, i) => ({
+    // Pentru zonele principale păstrăm structura existentă (rânduri/scaune)
+    if (zoneName === 'A' || zoneName === 'B') {
+      await loadConfig()
+      setEditingZone(null)
+      return
+    }
+
+    const removedZone = `${zoneName}_REMOVED`
+
+    const { data: existingSeats, error: fetchError } = await supabase
+      .from('seats')
+      .select('id, position_order')
+      .eq('zone', zoneName)
+      .order('position_order', { ascending: true })
+
+    if (fetchError) {
+      console.error('Error loading seats for zone update:', fetchError)
+      alert('Eroare la actualizare scaune!')
+      return
+    }
+
+    const currentCount = existingSeats?.length || 0
+
+    if (currentCount > totalSeats) {
+      const seatsToHide = (existingSeats || []).slice(totalSeats).map((seat) => seat.id)
+      if (seatsToHide.length > 0) {
+        const { error: hideError } = await supabase
+          .from('seats')
+          .update({ zone: removedZone })
+          .in('id', seatsToHide)
+
+        if (hideError) {
+          console.error('Error hiding extra seats:', hideError)
+          alert('Eroare la reducerea numărului de scaune!')
+          return
+        }
+      }
+    } else if (currentCount < totalSeats) {
+      const seatsToCreate = totalSeats - currentCount
+      const newSeats = Array.from({ length: seatsToCreate }, (_, i) => ({
         zone: zoneName,
-        position_order: i + 1,
+        position_order: currentCount + i + 1,
       }))
 
       const { error: insertError } = await supabase
@@ -75,11 +109,13 @@ export default function HallConfigPage() {
 
       if (insertError) {
         console.error('Error inserting seats:', insertError)
+        alert('Eroare la adăugarea scaunelor!')
+        return
       }
-
-      await loadConfig()
-      setEditingZone(null)
     }
+
+    await loadConfig()
+    setEditingZone(null)
   }
 
   if (!isAuthenticated) {
